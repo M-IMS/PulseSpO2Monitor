@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PulseSpO2Monitor" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/color_bpm</item>
+        <item name="colorPrimaryVariant">@color/color_bpm</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:windowBackground">@color/color_bg</item>
+        <item name="android:statusBarColor">@color/color_bg</item>
+        <item name="android:navigationBarColor">@color/color_bg</item>
+    </style>
+</resources>

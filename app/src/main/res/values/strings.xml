@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pulse &amp; SpO2 Monitor</string>
+    <string name="tab_monitor">Monitor</string>
+    <string name="tab_logs">Logs</string>
+    <string name="btn_save">💾  Save Record</string>
+    <string name="logs_title">Measurement History</string>
+    <string name="no_logs">No records saved yet</string>
+    <string name="btn_delete">🗑</string>
+    <string name="delete_confirm">Delete this record?</string>
+</resources>

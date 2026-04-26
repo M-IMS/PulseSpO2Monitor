@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.example.pulsespo2monitor.app-mergeDebugResources-30:/layout/activity_main.xml",
+        "source": "com.example.pulsespo2monitor.app-main-33:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/home/ims/.gradle/daemon/8.5/com.example.pulsespo2monitor.app-mergeDebugResources-30:/layout/activity_main.xml",
+        "source": "/home/ims/.gradle/daemon/8.5/com.example.pulsespo2monitor.app-main-33:/layout/activity_main.xml"
+    }
+]

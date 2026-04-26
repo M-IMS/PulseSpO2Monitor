@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="color_accuracy_high">#4CAF50</color>
+    <color name="color_accuracy_low">#F44336</color>
+    <color name="color_accuracy_med">#FF9800</color>
+    <color name="color_badge_blue_bg">#070F1F</color>
+    <color name="color_badge_red_bg">#1F0A0E</color>
+    <color name="color_bg">#0F1117</color>
+    <color name="color_bpm">#FF4B6E</color>
+    <color name="color_bpm_caution">#FF8C42</color>
+    <color name="color_card_bg">#1A1D27</color>
+    <color name="color_error">#FF4444</color>
+    <color name="color_hint">#4A5070</color>
+    <color name="color_instruction_bg">#161923</color>
+    <color name="color_save_btn">#4B9EFF</color>
+    <color name="color_spo2">#4B9EFF</color>
+    <color name="color_start_btn">#FF4B6E</color>
+    <color name="color_status">#8A90B0</color>
+    <color name="color_stop_btn">#2A2D3A</color>
+    <color name="color_subtitle">#7A80A0</color>
+    <color name="color_title">#EAEDF5</color>
+    <color name="color_warning">#FF9800</color>
+    <string name="app_name">Pulse &amp; SpO2 Monitor</string>
+    <string name="btn_delete">🗑</string>
+    <string name="btn_save">💾  Save Record</string>
+    <string name="delete_confirm">Delete this record?</string>
+    <string name="logs_title">Measurement History</string>
+    <string name="no_logs">No records saved yet</string>
+    <string name="tab_logs">Logs</string>
+    <string name="tab_monitor">Monitor</string>
+    <style name="Theme.PulseSpO2Monitor" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/color_bpm</item>
+        <item name="colorPrimaryVariant">@color/color_bpm</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:windowBackground">@color/color_bg</item>
+        <item name="android:statusBarColor">@color/color_bg</item>
+        <item name="android:navigationBarColor">@color/color_bg</item>
+    </style>
+</resources>
