@@ -4,7 +4,6 @@ package com.example.pulsespo2monitor.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -13,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.example.pulsespo2monitor.R;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -23,13 +23,19 @@ public final class ActivityMainBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
-  public final Button btnSave;
+  public final MaterialButton btnSave;
 
   @NonNull
-  public final Button btnToggle;
+  public final MaterialButton btnToggle;
 
   @NonNull
   public final TextView ivHeartIcon;
+
+  @NonNull
+  public final TextView labelBpm;
+
+  @NonNull
+  public final TextView labelSpo2;
 
   @NonNull
   public final ScrollView layoutLogs;
@@ -39,6 +45,9 @@ public final class ActivityMainBinding implements ViewBinding {
 
   @NonNull
   public final LinearLayout logsContainer;
+
+  @NonNull
+  public final LinearLayout logsItemsContainer;
 
   @NonNull
   public final LinearLayout measurementCard;
@@ -73,21 +82,25 @@ public final class ActivityMainBinding implements ViewBinding {
   @NonNull
   public final TextView tvStatus;
 
-  private ActivityMainBinding(@NonNull LinearLayout rootView, @NonNull Button btnSave,
-      @NonNull Button btnToggle, @NonNull TextView ivHeartIcon, @NonNull ScrollView layoutLogs,
+  private ActivityMainBinding(@NonNull LinearLayout rootView, @NonNull MaterialButton btnSave,
+      @NonNull MaterialButton btnToggle, @NonNull TextView ivHeartIcon, @NonNull TextView labelBpm,
+      @NonNull TextView labelSpo2, @NonNull ScrollView layoutLogs,
       @NonNull ScrollView layoutMonitor, @NonNull LinearLayout logsContainer,
-      @NonNull LinearLayout measurementCard, @NonNull TabLayout tabLayout,
-      @NonNull TextView tvAccuracy, @NonNull TextView tvBpm, @NonNull TextView tvBpmAvg,
-      @NonNull TextView tvNoLogs, @NonNull TextView tvSensorInfo,
+      @NonNull LinearLayout logsItemsContainer, @NonNull LinearLayout measurementCard,
+      @NonNull TabLayout tabLayout, @NonNull TextView tvAccuracy, @NonNull TextView tvBpm,
+      @NonNull TextView tvBpmAvg, @NonNull TextView tvNoLogs, @NonNull TextView tvSensorInfo,
       @NonNull TextView tvSensorInfoToggle, @NonNull TextView tvSpo2, @NonNull TextView tvSpo2Avg,
       @NonNull TextView tvStatus) {
     this.rootView = rootView;
     this.btnSave = btnSave;
     this.btnToggle = btnToggle;
     this.ivHeartIcon = ivHeartIcon;
+    this.labelBpm = labelBpm;
+    this.labelSpo2 = labelSpo2;
     this.layoutLogs = layoutLogs;
     this.layoutMonitor = layoutMonitor;
     this.logsContainer = logsContainer;
+    this.logsItemsContainer = logsItemsContainer;
     this.measurementCard = measurementCard;
     this.tabLayout = tabLayout;
     this.tvAccuracy = tvAccuracy;
@@ -129,13 +142,13 @@ public final class ActivityMainBinding implements ViewBinding {
     int id;
     missingId: {
       id = R.id.btnSave;
-      Button btnSave = ViewBindings.findChildViewById(rootView, id);
+      MaterialButton btnSave = ViewBindings.findChildViewById(rootView, id);
       if (btnSave == null) {
         break missingId;
       }
 
       id = R.id.btnToggle;
-      Button btnToggle = ViewBindings.findChildViewById(rootView, id);
+      MaterialButton btnToggle = ViewBindings.findChildViewById(rootView, id);
       if (btnToggle == null) {
         break missingId;
       }
@@ -143,6 +156,18 @@ public final class ActivityMainBinding implements ViewBinding {
       id = R.id.ivHeartIcon;
       TextView ivHeartIcon = ViewBindings.findChildViewById(rootView, id);
       if (ivHeartIcon == null) {
+        break missingId;
+      }
+
+      id = R.id.labelBpm;
+      TextView labelBpm = ViewBindings.findChildViewById(rootView, id);
+      if (labelBpm == null) {
+        break missingId;
+      }
+
+      id = R.id.labelSpo2;
+      TextView labelSpo2 = ViewBindings.findChildViewById(rootView, id);
+      if (labelSpo2 == null) {
         break missingId;
       }
 
@@ -161,6 +186,12 @@ public final class ActivityMainBinding implements ViewBinding {
       id = R.id.logsContainer;
       LinearLayout logsContainer = ViewBindings.findChildViewById(rootView, id);
       if (logsContainer == null) {
+        break missingId;
+      }
+
+      id = R.id.logsItemsContainer;
+      LinearLayout logsItemsContainer = ViewBindings.findChildViewById(rootView, id);
+      if (logsItemsContainer == null) {
         break missingId;
       }
 
@@ -231,8 +262,9 @@ public final class ActivityMainBinding implements ViewBinding {
       }
 
       return new ActivityMainBinding((LinearLayout) rootView, btnSave, btnToggle, ivHeartIcon,
-          layoutLogs, layoutMonitor, logsContainer, measurementCard, tabLayout, tvAccuracy, tvBpm,
-          tvBpmAvg, tvNoLogs, tvSensorInfo, tvSensorInfoToggle, tvSpo2, tvSpo2Avg, tvStatus);
+          labelBpm, labelSpo2, layoutLogs, layoutMonitor, logsContainer, logsItemsContainer,
+          measurementCard, tabLayout, tvAccuracy, tvBpm, tvBpmAvg, tvNoLogs, tvSensorInfo,
+          tvSensorInfoToggle, tvSpo2, tvSpo2Avg, tvStatus);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

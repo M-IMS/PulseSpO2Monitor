@@ -2,7 +2,6 @@ package com.example.pulsespo2monitor
 
 import android.Manifest
 import android.animation.ValueAnimator
-import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -14,11 +13,16 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import com.example.pulsespo2monitor.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
@@ -30,7 +34,7 @@ import java.util.Locale
 data class LogEntry(
     val timestamp: Long,
     val bpm: Int,
-    val spo2: Int
+    val spo2: Int,
 )
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -59,7 +63,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     // Timeout runnable – if no reading after 30s, show guidance
     private val timeoutRunnable = Runnable {
         if (isRunning) {
-            updateStatus("No signal. Ensure the finger covers the sensor completely.", isError = true)
+            updateStatus(getString(R.string.status_no_signal), isError = true)
         }
     }
 
@@ -95,20 +99,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         rawIrSensor = sensorManager.getDefaultSensor(SAM_IR_SENSOR_TYPE)
 
         // Update the sensor info panel
-        val hrStatus = if (heartRateSensor != null)
-            "✓  Heart Rate — ${heartRateSensor!!.name}"
-        else
-            "✗  Heart Rate sensor not detected"
+        val hrStatus = if (heartRateSensor != null) {
+            getString(R.string.sensor_check_hr_ok, heartRateSensor!!.name)
+        } else {
+            getString(R.string.sensor_check_hr_fail)
+        }
 
-        val spo2Status = if (spo2Sensor != null)
-            "✓  HRM/SpO2 — ${spo2Sensor!!.name}"
-        else
-            "✗  SpO2 hardware not detected"
+        val spo2Status = if (spo2Sensor != null) {
+            getString(R.string.sensor_check_spo2_ok, spo2Sensor!!.name)
+        } else {
+            getString(R.string.sensor_check_spo2_fail)
+        }
 
-        binding.tvSensorInfo.text = "$hrStatus\n\n$spo2Status"
-        
-        if (rawRedSensor != null && rawIrSensor != null) {
-            binding.tvSensorInfo.append("\n\n✓  Raw Red/IR available")
+        binding.tvSensorInfo.text = getString(R.string.sensor_info_format, hrStatus, spo2Status)
+
+        if ((rawRedSensor != null) && (rawIrSensor != null)) {
+            binding.tvSensorInfo.append("\n\n" + getString(R.string.sensor_check_raw_ok))
         }
     }
 
@@ -116,7 +122,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun setupUI() {
         resetDisplays()
-        updateStatus("Press START to begin measurement")
+        updateStatus(getString(R.string.status_start_prompt))
 
         binding.btnToggle.setOnClickListener {
             if (!isRunning) requestPermissionAndStart() else stopMeasurement()
@@ -127,29 +133,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         // Tab Switching
-        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        binding.tabLayout.addOnTabSelectedListener(
+            object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 if (tab?.position == 0) {
-                    binding.layoutMonitor.visibility = View.VISIBLE
-                    binding.layoutLogs.visibility = View.GONE
+                    binding.layoutMonitor.isVisible = true
+                    binding.layoutLogs.isVisible = false
                 } else {
-                    binding.layoutMonitor.visibility = View.GONE
-                    binding.layoutLogs.visibility = View.VISIBLE
+                    binding.layoutMonitor.isVisible = false
+                    binding.layoutLogs.isVisible = true
                     refreshLogsUI()
                 }
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
+        },
+        )
 
         // Show/hide sensor info panel
         binding.tvSensorInfoToggle.setOnClickListener {
-            if (binding.tvSensorInfo.visibility == View.GONE) {
-                binding.tvSensorInfo.visibility = View.VISIBLE
-                binding.tvSensorInfoToggle.text = "Hide sensor info ▲"
+            if (binding.tvSensorInfo.isGone) {
+                binding.tvSensorInfo.isVisible = true
+                binding.tvSensorInfoToggle.text = getString(R.string.sensor_info_hide)
             } else {
-                binding.tvSensorInfo.visibility = View.GONE
-                binding.tvSensorInfoToggle.text = "Show sensor info ▼"
+                binding.tvSensorInfo.isGone = true
+                binding.tvSensorInfoToggle.text = getString(R.string.sensor_info_show)
             }
         }
     }
@@ -158,35 +166,35 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val bpmText = binding.tvBpm.text.toString()
         val spo2Text = binding.tvSpo2.text.toString().replace("%", "")
 
-        if (bpmText == "--" || spo2Text == "--") {
-            Toast.makeText(this, "Wait for stable reading before saving", Toast.LENGTH_SHORT).show()
+        if ((bpmText == getString(R.string.default_empty_value)) || (spo2Text == getString(R.string.default_empty_value))) {
+            Toast.makeText(this, R.string.toast_wait_stable, Toast.LENGTH_SHORT).show()
             return
         }
 
         val entry = LogEntry(
             timestamp = System.currentTimeMillis(),
             bpm = bpmText.toInt(),
-            spo2 = spo2Text.toInt()
+            spo2 = spo2Text.toInt(),
         )
 
         val logs = getSavedLogs().toMutableList()
         logs.add(0, entry) // Add to top
         saveLogs(logs)
 
-        Toast.makeText(this, "Measurement saved to logs", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show()
     }
 
     private fun getSavedLogs(): List<LogEntry> {
-        val prefs = getSharedPreferences("measurements", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences("measurements", MODE_PRIVATE)
         val json = prefs.getString("logs", null) ?: return emptyList()
         val type = object : TypeToken<List<LogEntry>>() {}.type
         return Gson().fromJson(json, type)
     }
 
     private fun saveLogs(logs: List<LogEntry>) {
-        val prefs = getSharedPreferences("measurements", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences("measurements", MODE_PRIVATE)
         val json = Gson().toJson(logs)
-        prefs.edit().putString("logs", json).apply()
+        prefs.edit { putString("logs", json) }
     }
 
     private fun deleteLog(entry: LogEntry) {
@@ -194,83 +202,71 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         logs.removeIf { it.timestamp == entry.timestamp }
         saveLogs(logs)
         refreshLogsUI()
-        Toast.makeText(this, "Record deleted", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.toast_deleted, Toast.LENGTH_SHORT).show()
     }
 
     private fun refreshLogsUI() {
-        binding.logsContainer.removeAllViews()
-        
-        // Re-add title
-        val title = TextView(this).apply {
-            text = "Measurement History"
-            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_title))
-            textSize = 20f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            layoutParams = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { setMargins(0, 0, 0, 48) }
-        }
-        binding.logsContainer.addView(title)
+        binding.logsItemsContainer.removeAllViews()
 
         val logs = getSavedLogs()
-        if (logs.isEmpty()) {
-            binding.logsContainer.addView(binding.tvNoLogs)
-            return
-        }
+        binding.tvNoLogs.isVisible = logs.isEmpty()
 
         val dateFormat = SimpleDateFormat("MMM dd, HH:mm:ss", Locale.getDefault())
 
         for (log in logs) {
-            val logView = LayoutInflater.from(this).inflate(android.R.layout.simple_list_item_2, null)
+            val logView = LayoutInflater.from(this).inflate(
+                android.R.layout.simple_list_item_2,
+                binding.logsItemsContainer,
+                false,
+            )
             val text1 = logView.findViewById<TextView>(android.R.id.text1)
             val text2 = logView.findViewById<TextView>(android.R.id.text2)
 
-            text1.text = "${log.bpm} BPM  |  ${log.spo2}% SpO2"
+            text1.text = getString(R.string.log_format_main, log.bpm, log.spo2)
             text1.setTextColor(ContextCompat.getColor(this, R.color.color_title))
             text1.textSize = 16f
 
             text2.text = dateFormat.format(Date(log.timestamp))
             text2.setTextColor(ContextCompat.getColor(this, R.color.color_subtitle))
-            
+
             // Add margin/padding to the log item
             logView.setPadding(0, 24, 0, 24)
 
-            // Setup Long Click or adding a button for deletion
-            // For simplicity and matching user request "option to delete", let's use a long click with a toast/dialog
             logView.setOnLongClickListener {
-                androidx.appcompat.app.AlertDialog.Builder(this)
+                AlertDialog.Builder(this)
                     .setTitle(getString(R.string.delete_confirm))
-                    .setPositiveButton("Delete") { _, _ ->
+                    .setPositiveButton(R.string.dialog_delete) { _, _ ->
                         deleteLog(log)
                     }
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton(R.string.dialog_cancel, null)
                     .show()
                 true
             }
-            
-            binding.logsContainer.addView(logView)
-            
+
+            binding.logsItemsContainer.addView(logView)
+
             // Add divider
             val divider = View(this).apply {
-                layoutParams = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                    2
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    2,
                 )
                 setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_card_bg))
             }
-            binding.logsContainer.addView(divider)
+            binding.logsItemsContainer.addView(divider)
         }
     }
 
     private fun resetDisplays() {
-        binding.tvBpm.text = "--"
-        binding.tvSpo2.text = "--"
+        binding.tvBpm.text = getString(R.string.default_empty_value)
+        binding.tvSpo2.text = getString(R.string.default_empty_value)
         binding.tvBpmAvg.text = ""
         binding.tvSpo2Avg.text = ""
         binding.tvAccuracy.text = ""
         bpmHistory.clear()
         spo2History.clear()
+        redBuffer.clear()
+        irBuffer.clear()
     }
 
     private fun updateStatus(msg: String, isError: Boolean = false) {
@@ -306,7 +302,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 startMeasurement()
             } else {
                 Toast.makeText(
@@ -321,22 +317,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     // ─── Measurement Control ────────────────────────────────────────────────
 
     private fun startMeasurement() {
-        if (heartRateSensor == null && spo2Sensor == null) {
-            updateStatus("No health sensors found on this device.", isError = true)
+        if ((heartRateSensor == null) && (spo2Sensor == null)) {
+            updateStatus(getString(R.string.status_no_sensors), isError = true)
             return
         }
 
         isRunning = true
         resetDisplays()
-        binding.btnToggle.text = "■  Stop"
+        binding.btnToggle.text = getString(R.string.btn_stop)
         binding.btnToggle.backgroundTintList =
             ContextCompat.getColorStateList(this, R.color.color_stop_btn)
-        binding.measurementCard.visibility = View.VISIBLE
+        binding.measurementCard.isVisible = true
 
-        updateStatus("Place your finger firmly on the rear sensor…")
+        updateStatus(getString(R.string.status_adjust))
 
         // Try to register SpO2/HRM sensor FIRST
-        // On Note 9, multiple registrations on the biosensor might fail
         val registeredSpo2 = spo2Sensor?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_FASTEST)
         } ?: false
@@ -356,6 +351,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         // Start 30s timeout
+        handler.removeCallbacks(timeoutRunnable)
         handler.postDelayed(timeoutRunnable, 30_000)
     }
 
@@ -365,17 +361,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         handler.removeCallbacks(timeoutRunnable)
         stopPulseAnimation()
 
-        binding.btnToggle.text = "▶  Start"
+        binding.btnToggle.text = getString(R.string.btn_start)
         binding.btnToggle.backgroundTintList =
             ContextCompat.getColorStateList(this, R.color.color_start_btn)
 
-        updateStatus("Measurement stopped")
+        updateStatus(getString(R.string.status_stopped))
     }
 
     // ─── SensorEventListener ────────────────────────────────────────────────
 
     override fun onSensorChanged(event: SensorEvent) {
+        // Reschedule timeout whenever ANY health sensor event arrives
         handler.removeCallbacks(timeoutRunnable)
+        handler.postDelayed(timeoutRunnable, 30_000)
 
         when (event.sensor.type) {
             Sensor.TYPE_HEART_RATE -> {
@@ -393,11 +391,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
             SAM_RED_SENSOR_TYPE -> {
                 lastRedValue = event.values[0]
-                calculateSpO2FromRaw()
+                updateBufferAndCalculate(isRed = true)
             }
             SAM_IR_SENSOR_TYPE -> {
                 lastIrValue = event.values[0]
-                calculateSpO2FromRaw()
+                updateBufferAndCalculate(isRed = false)
             }
         }
     }
@@ -405,46 +403,41 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private val redBuffer = ArrayDeque<Float>(200)
     private val irBuffer = ArrayDeque<Float>(200)
 
+    private fun updateBufferAndCalculate(isRed: Boolean) {
+        if (isRed) {
+            if (redBuffer.size >= 200) redBuffer.removeFirst()
+            redBuffer.addLast(lastRedValue)
+        } else {
+            if (irBuffer.size >= 200) irBuffer.removeFirst()
+            irBuffer.addLast(lastIrValue)
+        }
+
+        if (redBuffer.size >= 200 && irBuffer.size >= 200) {
+            calculateSpO2FromRaw()
+        }
+    }
+
     private fun calculateSpO2FromRaw() {
-        if (lastRedValue <= 0 || lastIrValue <= 0) return
-
-        // Maintain sliding windows
-        if (redBuffer.size >= 200) redBuffer.removeFirst()
-        redBuffer.addLast(lastRedValue)
-        
-        if (irBuffer.size >= 200) irBuffer.removeFirst()
-        irBuffer.addLast(lastIrValue)
-
-        if (redBuffer.size < 200) return
-
         // Calculate DC (average)
         val redDc = redBuffer.average().toFloat()
         val irDc = irBuffer.average().toFloat()
 
-        // Calculate AC (peak-to-peak as a proxy for pulsatile component)
-        val redMin = redBuffer.minOrNull() ?: 0f
-        val redMax = redBuffer.maxOrNull() ?: 0f
-        val irMin = irBuffer.minOrNull() ?: 0f
-        val irMax = irBuffer.maxOrNull() ?: 0f
-        
-        val redAc = redMax - redMin
-        val irAc = irMax - irMin
+        // Calculate AC (peak-to-peak)
+        val redAc = (redBuffer.maxOrNull() ?: 0f) - (redBuffer.minOrNull() ?: 0f)
+        val irAc = (irBuffer.maxOrNull() ?: 0f) - (irBuffer.minOrNull() ?: 0f)
 
         if (redDc > 0 && irDc > 0 && irAc > 0) {
             val r = (redAc / redDc) / (irAc / irDc)
-            
+
             // Standard ratio-of-ratios formula
             var spo2 = 110 - (25 * r)
-            
+
             if (spo2 > 100f) spo2 = 100f
             if (spo2 < 70f) spo2 = 70f
 
             // Update if signal looks valid (AC > 0.05% of DC)
             if (redAc > redDc * 0.0005f && irAc > irDc * 0.0005f) {
                 handleSpo2Reading(spo2)
-                
-                // --- HEART RATE CALCULATION (Independent from system) ---
-                // Simple peak detection from the IR signal (higher quality than Red)
                 detectHeartRateFromBuffer()
             }
         }
@@ -472,16 +465,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-        if (sensor.type == Sensor.TYPE_HEART_RATE) {
+        if (sensor.type == Sensor.TYPE_HEART_RATE || sensor.type == SAM_HRM_SENSOR_TYPE) {
             val (text, color) = when (accuracy) {
                 SensorManager.SENSOR_STATUS_ACCURACY_HIGH ->
-                    "Accuracy: High ●" to R.color.color_accuracy_high
+                    getString(R.string.accuracy_high) to R.color.color_accuracy_high
                 SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM ->
-                    "Accuracy: Medium ●" to R.color.color_accuracy_med
+                    getString(R.string.accuracy_medium) to R.color.color_accuracy_med
                 SensorManager.SENSOR_STATUS_ACCURACY_LOW ->
-                    "Accuracy: Low — press finger firmly ●" to R.color.color_accuracy_low
+                    getString(R.string.accuracy_low) to R.color.color_accuracy_low
                 else ->
-                    "No contact — cover the rear sensor ●" to R.color.color_error
+                    getString(R.string.accuracy_none) to R.color.color_error
             }
             binding.tvAccuracy.text = text
             binding.tvAccuracy.setTextColor(ContextCompat.getColor(this, color))
@@ -489,10 +482,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             if (accuracy == SensorManager.SENSOR_STATUS_ACCURACY_HIGH ||
                 accuracy == SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM
             ) {
-                updateStatus("Measuring — keep your finger still")
+                updateStatus(getString(R.string.status_measuring))
                 startPulseAnimation()
             } else {
-                updateStatus("Adjust finger placement on the sensor")
+                updateStatus(getString(R.string.status_adjust))
                 stopPulseAnimation()
             }
         }
@@ -509,14 +502,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         if (bpmHistory.size >= 2) {
             val avg = bpmHistory.average().toInt()
-            binding.tvBpmAvg.text = "Avg: $avg BPM"
+            binding.tvBpmAvg.text = getString(R.string.bpm_avg_format, avg)
         }
 
         // Color-code BPM (normal 60-100)
-        val color = when {
-            bpm < 50 || bpm > 120 -> R.color.color_warning
-            bpm < 60 || bpm > 100 -> R.color.color_bpm_caution
-            else -> R.color.color_bpm
+        val color = when (bpm) {
+            in 50f..120f -> {
+                if (bpm in 60f..100f) R.color.color_bpm else R.color.color_bpm_caution
+            }
+            else -> R.color.color_warning
         }
         binding.tvBpm.setTextColor(ContextCompat.getColor(this, color))
     }
@@ -526,8 +520,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         spo2History.addLast(spo2)
 
         val avg = spo2History.average().toFloat()
-        binding.tvSpo2.text = "${avg.toInt()}%"
-        binding.tvSpo2Avg.text = "Raw: ${spo2.toInt()}%"
+        binding.tvSpo2.text = getString(R.string.spo2_percent_format, avg.toInt())
+        binding.tvSpo2Avg.text = getString(R.string.spo2_raw_format, spo2.toInt())
 
         // Color-code SpO2 (normal ≥ 95%)
         val color = when {

@@ -1,36 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Backgrounds -->
-    <color name="color_bg">#0F1117</color>
-    <color name="color_card_bg">#1A1D27</color>
-    <color name="color_instruction_bg">#161923</color>
+    <!-- Modern Minimalist Palette -->
+    <color name="color_bg">#0A0A0C</color>
+    <color name="color_surface">#141417</color>
+    <color name="color_surface_variant">#1C1C21</color>
 
-    <!-- Text -->
-    <color name="color_title">#EAEDF5</color>
-    <color name="color_subtitle">#7A80A0</color>
-    <color name="color_hint">#4A5070</color>
-    <color name="color_status">#8A90B0</color>
+    <!-- Accent Colors (Vibrant but controlled) -->
+    <color name="color_primary">#FF2D55</color>
+    <color name="color_secondary">#007AFF</color>
 
-    <!-- Metric colors -->
-    <color name="color_bpm">#FF4B6E</color>
-    <color name="color_bpm_caution">#FF8C42</color>
-    <color name="color_spo2">#4B9EFF</color>
+    <!-- Text Colors (Refined hierarchy) -->
+    <color name="color_on_surface">#F2F2F7</color>
+    <color name="color_on_surface_variant">#8E8E93</color>
+    <color name="color_on_surface_subtle">#48484A</color>
 
-    <!-- Accuracy states -->
-    <color name="color_accuracy_high">#4CAF50</color>
-    <color name="color_accuracy_med">#FF9800</color>
-    <color name="color_accuracy_low">#F44336</color>
+    <!-- Semantic & Specific -->
+    <color name="color_bpm">#FF2D55</color>
+    <color name="color_bpm_caution">#FF9500</color>
+    <color name="color_spo2">#007AFF</color>
 
-    <!-- Semantic -->
-    <color name="color_error">#FF4444</color>
-    <color name="color_warning">#FF9800</color>
+    <color name="color_accuracy_high">#34C759</color>
+    <color name="color_accuracy_med">#FFCC00</color>
+    <color name="color_accuracy_low">#FF3B30</color>
 
-    <!-- Buttons -->
-    <color name="color_start_btn">#FF4B6E</color>
-    <color name="color_stop_btn">#2A2D3A</color>
-    <color name="color_save_btn">#4B9EFF</color>
+    <color name="color_error">#FF3B30</color>
+    <color name="color_warning">#FF9500</color>
+    <color name="color_status">#8E8E93</color>
 
-    <!-- Range badge backgrounds -->
-    <color name="color_badge_red_bg">#1F0A0E</color>
-    <color name="color_badge_blue_bg">#070F1F</color>
+    <!-- Legacy / Compatibility (Mapped to new palette) -->
+    <color name="color_card_bg">@color/color_surface</color>
+    <color name="color_instruction_bg">@color/color_surface_variant</color>
+    <color name="color_title">@color/color_on_surface</color>
+    <color name="color_subtitle">@color/color_on_surface_variant</color>
+    <color name="color_hint">@color/color_on_surface_subtle</color>
+    <color name="color_start_btn">@color/color_primary</color>
+    <color name="color_stop_btn">@color/color_surface_variant</color>
+    <color name="color_save_btn">@color/color_secondary</color>
+
+    <!-- Badge Backgrounds (Very subtle glass-like) -->
+    <color name="color_badge_red_bg">#1AEE4452</color>
+    <color name="color_badge_blue_bg">#1A007AFF</color>
 </resources>
